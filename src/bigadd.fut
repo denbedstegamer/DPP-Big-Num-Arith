@@ -3,8 +3,7 @@ def carry_prop (c1 : u32) (c2 : u32) =
     -- 1 del - anden bit bestemmer cascading overflows (mx1 && mx2)
     -- 2 del - første bit bestemmer reelle overflows   ((ov1 && mx2) || ov2)
 
-def badd0 [m] (ipb : i64) (n : i64)
-          (ash : [m]u64) (bsh : [m]u64)
+def badd0 [m] (ash : [m]u64) (bsh : [m]u64)
           : [m]u64 =
     let (res, c) = map2 (\a b -> 
                             let s = a + b
@@ -33,4 +32,4 @@ def bigadd [ipb] [n] (as : [ipb*(4*n)]u64)
     let bsh = b1s ++ b2s ++ b3s ++ b4s
     -- ovenstående flytter as -> ash, b -> bsh, hvor de nye adresser er i shared memory
 
-    in (badd0 ipb n ash bsh) :> [ipb*(4*n)]u64
+    in (badd0 ash bsh) :> [ipb*(4*n)]u64
