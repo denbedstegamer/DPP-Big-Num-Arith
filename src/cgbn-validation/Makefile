@@ -6,7 +6,7 @@ CXX = nvcc -O3 -arch=sm_70
 HELPERS  = ./helper.h
 SRC_CGBN = cgbn-vs-fut.cu
 EXE_CGBN = big-num-cgbn
-OUT		 = output.txt output
+OUT		 = add_out mul_out
 
 default: run
 

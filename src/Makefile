@@ -1,18 +1,26 @@
 EXE = big-arith-valid
 PROG = big-arith-valid.fut
-VAL_DIR = cgbn-validation
+OUT_DIR = cgbn-validation
 
-default: validation
+default: validate
 
-debug:
+depend:
 	$(MAKE) -C cgbn-validation
 	futhark cuda $(PROG)
-	cat $(VAL_DIR)/output | ./$(EXE) -e big_add_validation_debug
 
-validation:
-	$(MAKE) -C cgbn-validation
-	futhark cuda $(PROG)
-	cat $(VAL_DIR)/output | ./$(EXE) -e big_add_validation
+mul: depend
+	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_validation
+
+add: depend
+	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_validation
+
+debug: depend
+	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
+	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
+
+validate: depend
+	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_validation
+	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_validation
 
 clean:
 	rm -f *.c *.txt $(EXE)

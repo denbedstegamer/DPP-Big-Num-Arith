@@ -61,3 +61,6 @@ def convulution4 (n : i32) (ash : []u64) (bsh : []u64) (tid : i32)
             in (lhc2, lhc3)
     let (l_nm2, l_nm1, h_n, c_np1) = combine2 lhc2 lhc3
     in ( (l0, l1, h2, c3), (l_nm2, l_nm1, h_n, c_np1) )
+
+def bmul0 [n] [m] (as : [n]u64) (bs : [n]u64) : [m]u64 =
+  let conv = convulution4 (i32.i64 n) as bs 

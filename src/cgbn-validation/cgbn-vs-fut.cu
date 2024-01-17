@@ -212,9 +212,9 @@ void runMul ( const uint32_t num_instances, const uint32_t cuda_block
 	//verifyResults(false, num_instances, instances);
 }
 
-void printInstancesToFile(const uint32_t num_instances, instance_t *instances) {
+void printInstancesToFile(const uint32_t num_instances, instance_t *instances, char *fileName) {
   uint64_t c;
-  std::ofstream outFile("output");
+  std::ofstream outFile(fileName);
   if (outFile.is_open()) {
       outFile << "[";
       for (int i = 0; i < num_instances; ++i) {
@@ -267,13 +267,14 @@ int main(int argc, char * argv[]) {
 	CUDA_CHECK(cudaMemcpy(gpuInstances, instances, sizeof(instance_t)*num_instances, cudaMemcpyHostToDevice));
 
 	// create a cgbn_error_report for CGBN to report back errors
-	CUDA_CHECK(cgbn_error_report_alloc(&report)); 
+	CUDA_CHECK(cgbn_error_report_alloc(&report));
 
     
     runAdd (num_instances, 128, report, gpuInstances, instances);
-    printInstancesToFile(num_instances, instances);
+    printInstancesToFile(num_instances, instances, "add_out");
 
     runMul (num_instances, 128, report, gpuInstances, instances);
+    printInstancesToFile(num_instances, instances, "mul_out");
     
 	// clean up
 	free(instances);
