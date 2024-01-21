@@ -73,7 +73,7 @@ void verifyResults(bool is_add, uint32_t num_instances, instance_t  *instances) 
 
 void runAdd ( const uint32_t num_instances, const uint32_t cuda_block
             , cgbn_error_report_t *report,  instance_t  *gpuInstances
-            , instance_t  *instances
+            , instance_t  *instances, const int state
 ) {
 	const unsigned GPU_RUNS = 300;
 
@@ -99,17 +99,19 @@ void runAdd ( const uint32_t num_instances, const uint32_t cuda_block
 	//printf("Average of %d runs: %ld\n", GPU_RUNS, elapsed);
 	
 	gpuAssert( cudaPeekAtLastError() );
-
+  if (state == 1) {
     const uint32_t m = BITS / 32;
     double runtime_microsecs = elapsed; 
     double bytes_accesses = 3.0 * num_instances * m * sizeof(uint32_t);  
     double gigabytes = bytes_accesses / (runtime_microsecs * 1000);
 
-//     printf( "CGBN Addition (num-instances = %d, num-word-len = %d, total-size: %d) \
-// runs in: %lu microsecs, GB/sec: %.2f, Mil-Instances/sec: %.2f\n"
-//           , num_instances, m, num_instances * m, elapsed
-//           , gigabytes, num_instances / runtime_microsecs
-//           );
+    printf( "CGBN Addition (num-instances = %d, num-word-len = %d, total-size: %d) \
+runs in: %lu microsecs, GB/sec: %.2f, Mil-Instances/sec: %.2f\n"
+          , num_instances, m, num_instances * m, elapsed
+          , gigabytes, num_instances / runtime_microsecs
+          );
+  }
+    
 	
     // error report uses managed memory, so we sync the device (or stream) and check for cgbn errors
 	CUDA_CHECK(cudaDeviceSynchronize());
@@ -142,16 +144,20 @@ void runAdd ( const uint32_t num_instances, const uint32_t cuda_block
 	    
 	    gpuAssert( cudaPeekAtLastError() );
 
+      if (state == 1) {
         const uint32_t m = BITS / 32;
-        double runtime_microsecs = elapsed; 
-        double bytes_accesses = 3.0 * 6.0 * num_instances * m * sizeof(uint32_t);  
+        double runtime_microsecs = elapsed;
+        double bytes_accesses = 3.0 * 6.0 * num_instances * m * sizeof(uint32_t);
         double gigabytes = bytes_accesses / (runtime_microsecs * 1000);
 
-//         printf( "CGBN SIX Additions (num-instances = %d, num-word-len = %d, total-size: %d) \
-// runs in: %lu microsecs, GB/sec: %.2f, Mil-Instances/sec: %.2f\n"
-//               , num_instances, m, num_instances * m, elapsed
-//               , gigabytes, num_instances / runtime_microsecs
-//               );
+        printf( "CGBN SIX Additions (num-instances = %d, num-word-len = %d, total-size: %d) \
+runs in: %lu microsecs, GB/sec: %.2f, Mil-Instances/sec: %.2f\n"
+              , num_instances, m, num_instances * m, elapsed
+              , gigabytes, num_instances / runtime_microsecs
+              );
+      }
+
+        
 	    
         // error report uses managed memory, so we sync the device (or stream) and check for cgbn errors
 	    CUDA_CHECK(cudaDeviceSynchronize());
@@ -161,7 +167,7 @@ void runAdd ( const uint32_t num_instances, const uint32_t cuda_block
 
 void runMul ( const uint32_t num_instances, const uint32_t cuda_block
             , cgbn_error_report_t *report,  instance_t  *gpuInstances
-            , instance_t  *instances
+            , instance_t  *instances, const int state
 ) {
 	const unsigned GPU_RUNS = 100;
 
@@ -188,16 +194,18 @@ void runMul ( const uint32_t num_instances, const uint32_t cuda_block
 	
 	gpuAssert( cudaPeekAtLastError() );
 
+  if (state == 1) {
     const uint32_t m = BITS / 32;
     double runtime_microsecs = elapsed;
     double num_u32_ops = 4.0 * num_instances * m * m; 
     double gigaopsu32 = num_u32_ops / (runtime_microsecs * 1000);
 
-//     printf( "CGBN Multiply (num-instances = %d, num-word-len = %d, total-size: %d), \
-// averaged over %d runs: %lu microsecs, Gopsu32/sec: %.2f, Mil-Instances/sec: %.2f\n"
-//           , num_instances, m, num_instances * m, GPU_RUNS
-//           , elapsed, gigaopsu32, num_instances / runtime_microsecs
-//           );
+    printf( "CGBN Multiply (num-instances = %d, num-word-len = %d, total-size: %d), \
+averaged over %d runs: %lu microsecs, Gopsu32/sec: %.2f, Mil-Instances/sec: %.2f\n"
+          , num_instances, m, num_instances * m, GPU_RUNS
+          , elapsed, gigaopsu32, num_instances / runtime_microsecs
+          );
+  }
 	
     // error report uses managed memory, so we sync the device (or stream) and check for cgbn errors
 	CUDA_CHECK(cudaDeviceSynchronize());
@@ -258,12 +266,14 @@ void printInstancesToFile(const uint32_t num_instances, instance_t *instances, c
 }
 
 int main(int argc, char * argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <number-of-instances>\n", argv[0]);
+    if (argc != 3) {
+        printf("Usage: %s <number-of-instances>, <valid/0-bench/1>\n", argv[0]);
         exit(1);
     }
         
     const int num_instances = atoi(argv[1]);
+
+    const int state = atoi(argv[2]);
     
     instance_t          *instances, *gpuInstances;
 	cgbn_error_report_t *report;
@@ -280,11 +290,11 @@ int main(int argc, char * argv[]) {
 	CUDA_CHECK(cgbn_error_report_alloc(&report));
 
     
-    runAdd (num_instances, 128, report, gpuInstances, instances);
-    printInstancesToFile(num_instances, instances, "add_out");
+    runAdd (num_instances, 128, report, gpuInstances, instances, state);
+    if (!state) printInstancesToFile(num_instances, instances, "add_out");
 
-    runMul (num_instances, 128, report, gpuInstances, instances);
-    printInstancesToFile(num_instances, instances, "mul_out");
+    runMul (num_instances, 128, report, gpuInstances, instances, state);
+    if (!state) printInstancesToFile(num_instances, instances, "mul_out");
     
 	// clean up
 	free(instances);

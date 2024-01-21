@@ -36,7 +36,6 @@ def bigadd [n] (as : [4*n]u64)
     let (b1s, b2s, b3s, b4s) = unzip4 bss
     let ash = a1s ++ a2s ++ a3s ++ a4s
     let bsh = b1s ++ b2s ++ b3s ++ b4s
-    -- ovenstående flytter as -> ash, b -> bsh, hvor de nye adresser er i shared memory
 
     in (badd0 ash bsh) :> [4*n]u64
 

@@ -14,17 +14,19 @@ mul: depend
 add: depend
 	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_validation
 
-debug: depend
-	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
-	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
+# deprecated due to batching.
+#debug: depend
+#	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
+#	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
 
-abug: # remove later
-	futhark cuda $(PROG)
-	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
+bench-c:
+	futhark bench $(PROG) --backend=c
 
-mbug: # remove later
-	futhark cuda $(PROG)
-	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
+bench-cuda:
+	futhark bench $(PROG) --backend=cuda
+
+bench-cgbn:
+	$(MAKE) benchmark -C $(OUT_DIR)
 
 validate: depend
 	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_validation
