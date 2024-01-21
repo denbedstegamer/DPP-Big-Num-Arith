@@ -14,8 +14,14 @@ def badd0 [m] (ash : [m]u64) (bsh : [m]u64)
     -- In principle, c and carry_prop could use u2, u4, or u8 instead
     -- Assuming registers always have at least 32 bits, this doesn't change much
     let carries = scan carry_prop 2u32 c
-    in map2 (\r i -> r + u64.bool (i > 0 && (carries[i-1] & 1 == 1))) res (0..<m)
-    
+                  |> rotate (-1)
+                  |> drop 1
+                  |> concat [0]
+                  |> map u64.u32
+                  :> [m]u64
+    in map2 (\r c -> r+c) res carries
+    -- let carries = scan carry_prop 2u32 c
+    -- in map2 (\r i -> r + u64.bool (i > 0 && (carries[i-1] & 1 == 1))) res (0..<m)
 
 def bigadd [n] (as : [4*n]u64) 
                (bs : [4*n]u64) 
@@ -33,3 +39,21 @@ def bigadd [n] (as : [4*n]u64)
     -- ovenstående flytter as -> ash, b -> bsh, hvor de nye adresser er i shared memory
 
     in (badd0 ash bsh) :> [4*n]u64
+
+
+--- Our predecessors implementation. Intended use: debugging. Did not prove useful.
+-- def add_op (a : (bool, bool)) (b : (bool, bool)) : (bool, bool) =
+--     let (ov1, mx1) = a
+--     let (ov2, mx2) = b
+
+--     let ov = (ov1 && mx2) || ov2
+--     let mx = mx1 && mx2
+
+--     in (ov, mx)
+
+-- def add32 [n] (a : [n]u32) (b : [n]u32) : [n]u32 =
+--     let (res, cs) = unzip <|
+--     map2 (\x y -> let xy = x + y in (xy, (xy < x, xy == u32.highest))) a b
+--     let (carries, _) = unzip <| rotate (-1) <| scan add_op (false,true) cs
+--     let carries[0] = false -- overflow doesn't loop
+--     in map2 (\x f -> x + u32.bool f) res carries

@@ -55,21 +55,21 @@ instance_t *generate_instances(uint32_t count) {
   return instances;
 }
 
-// void verifyResults(bool is_add, uint32_t num_instances, instance_t  *instances) {
-//     uint32_t buffer[BITS/32];
-//     for(uint32_t i=0; i<num_instances; i++) {
-//         gmpAddMulOnce<BITS/32>(is_add, &instances[i].a._limbs[0], &instances[i].b._limbs[0], &buffer[0]);
-//         for(uint32_t j=0; j<BITS/32; j++) {
-//              if ( buffer[j] != instances[i].sum._limbs[j] ) {
-//                 printf( "INVALID RESULT at instance: %u, local index %u: %u vs %u\n"
-//                       , i, j, buffer[j], instances[i].sum._limbs[j]
-//                       );
-//                 return;
-//             }
-//         }
-//     }
-//     printf("VALID!\n");
-// }
+void verifyResults(bool is_add, uint32_t num_instances, instance_t  *instances) {
+    uint32_t buffer[BITS/32];
+    for(uint32_t i=0; i<num_instances; i++) {
+        gmpAddMulOnce<BITS/32>(is_add, &instances[i].a._limbs[0], &instances[i].b._limbs[0], &buffer[0]);
+        for(uint32_t j=0; j<BITS/32; j++) {
+             if ( buffer[j] != instances[i].sum._limbs[j] ) {
+                printf( "INVALID RESULT at instance: %u, local index %u: %u vs %u\n"
+                      , i, j, buffer[j], instances[i].sum._limbs[j]
+                      );
+                return;
+            }
+        }
+    }
+    printf("VALID!\n");
+}
 
 void runAdd ( const uint32_t num_instances, const uint32_t cuda_block
             , cgbn_error_report_t *report,  instance_t  *gpuInstances
@@ -212,33 +212,43 @@ void runMul ( const uint32_t num_instances, const uint32_t cuda_block
 	//verifyResults(false, num_instances, instances);
 }
 
+/// I know this function is ugly, but formalizing this is the least of my concerns
 void printInstancesToFile(const uint32_t num_instances, instance_t *instances, char *fileName) {
   uint64_t c;
   std::ofstream outFile(fileName);
   if (outFile.is_open()) {
       outFile << "[";
       for (int i = 0; i < num_instances; ++i) {
+        outFile << "[";
         for (int j = 0; j < BITS/32; j=j+2) {
           c = (uint64_t) instances[i].a._limbs[j] + ((uint64_t) instances[i].a._limbs[j+1] << 32);
           outFile << c << "u64";
-          if (i != num_instances - 1 || j != BITS/32 - 2) outFile << ", ";
+          if (j != BITS/32 - 2) outFile << ", ";
         }
+        outFile << "]";
+        if (i != num_instances - 1) outFile << ", ";
       }
       outFile << "]\n[";
       for (int i = 0; i < num_instances; ++i) {
+        outFile << "[";
         for (int j = 0; j < BITS/32; j=j+2) {
           c = (uint64_t) instances[i].b._limbs[j] + ((uint64_t) instances[i].b._limbs[j+1] << 32);
           outFile << c << "u64";
-          if (i != num_instances - 1 || j != BITS/32 - 2) outFile << ", ";
+          if (j != BITS/32 - 2) outFile << ", ";
         }
+        outFile << "]";
+        if (i != num_instances - 1) outFile << ", ";
       }
       outFile << "]\n[";
       for (int i = 0; i < num_instances; ++i) {
+        outFile << "[";
         for (int j = 0; j < BITS/32; j=j+2) {
           c = (uint64_t) instances[i].sum._limbs[j] + ((uint64_t) instances[i].sum._limbs[j+1] << 32);
           outFile << c << "u64";
-          if (i != num_instances - 1 || j != BITS/32 - 2) outFile << ", ";
+          if (j != BITS/32 - 2) outFile << ", ";
         }
+        outFile << "]";
+        if (i != num_instances - 1) outFile << ", ";
       }
       outFile << "]\n";
       outFile.close();

@@ -18,6 +18,10 @@ debug: depend
 	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
 	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
 
+abug: # remove later
+	futhark cuda $(PROG)
+	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
+
 mbug: # remove later
 	futhark cuda $(PROG)
 	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
