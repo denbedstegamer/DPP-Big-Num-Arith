@@ -28,7 +28,7 @@ default: run
 	
 run:
 	$(CXX) -ICGBN -DNUM_BITS=8192 -DTHD_PER_INST=32 $(SRC_CGBN) -o $(EXE_CGBN) -lgmp
-	./$(EXE_CGBN) 32
+	./$(EXE_CGBN) 16
 	
 # run-128:
 # 	$(CXX) -ICGBN -DNUM_BITS=4096 -DTHD_PER_INST=16 $(SRC_CGBN) -o $(EXE_CGBN) -lgmp

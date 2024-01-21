@@ -5,7 +5,7 @@ OUT_DIR = cgbn-validation
 default: validate
 
 depend:
-	$(MAKE) -C cgbn-validation
+	$(MAKE) -C $(OUT_DIR)
 	futhark cuda $(PROG)
 
 mul: depend
@@ -18,10 +18,14 @@ debug: depend
 	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_debug
 	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
 
+mbug: # remove later
+	futhark cuda $(PROG)
+	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_debug
+
 validate: depend
 	cat $(OUT_DIR)/add_out | ./$(EXE) -e big_add_validation
 	cat $(OUT_DIR)/mul_out | ./$(EXE) -e big_mul_validation
 
 clean:
 	rm -f *.c *.txt $(EXE)
-	$(MAKE) clean -C cgbn-validation
+	$(MAKE) clean -C $(OUT_DIR)

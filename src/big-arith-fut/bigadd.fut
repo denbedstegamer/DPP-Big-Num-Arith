@@ -17,10 +17,10 @@ def badd0 [m] (ash : [m]u64) (bsh : [m]u64)
     in map2 (\r i -> r + u64.bool (i > 0 && (carries[i-1] & 1 == 1))) res (0..<m)
     
 
-def bigadd [ipb] [n] (as : [ipb*(4*n)]u64) 
-                     (bs : [ipb*(4*n)]u64) 
-                     : [ipb*(4*n)]u64 =
-    let g = ipb * n
+def bigadd [n] (as : [4*n]u64) 
+               (bs : [4*n]u64) 
+               : [4*n]u64 =
+    let g = n
     let cp2sh (i : i32) =
         let g = i32.i64 g in
         ((as[i], as[g + i], as[2 * g + i], as[3 * g + i]), 
@@ -32,4 +32,4 @@ def bigadd [ipb] [n] (as : [ipb*(4*n)]u64)
     let bsh = b1s ++ b2s ++ b3s ++ b4s
     -- ovenstående flytter as -> ash, b -> bsh, hvor de nye adresser er i shared memory
 
-    in (badd0 ash bsh) :> [ipb*(4*n)]u64
+    in (badd0 ash bsh) :> [4*n]u64
