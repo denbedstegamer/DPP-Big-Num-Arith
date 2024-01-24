@@ -13,15 +13,15 @@ def badd0 [m] (ash : [m]u64) (bsh : [m]u64)
                         ) ash bsh |> unzip
     -- In principle, c and carry_prop could use u2, u4, or u8 instead
     -- Assuming registers always have at least 32 bits, this doesn't change much
-    let carries = scan carry_prop 2u32 c
-                  |> rotate (-1)
-                  |> drop 1
-                  |> concat [0]
-                  |> map u64.u32
-                  :> [m]u64
-    in map2 (\r c -> r+c) res carries
     -- let carries = scan carry_prop 2u32 c
-    -- in map2 (\r i -> r + u64.bool (i > 0 && (carries[i-1] & 1 == 1))) res (0..<m)
+                --   |> rotate (-1)
+                --   |> drop 1
+                --   |> concat [0]
+                --   |> map u64.u32
+                --   :> [m]u64
+    -- in map2 (\r c -> r+c) res carries
+    let carries = scan carry_prop 2u32 c
+    in map2 (\r i -> r + u64.bool (i > 0 && (carries[i-1] & 1 == 1))) res (0..<m)
 
 def bigadd [n] (as : [4*n]u64) 
                (bs : [4*n]u64) 
